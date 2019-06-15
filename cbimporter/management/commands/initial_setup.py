@@ -8,9 +8,7 @@ class Command(BaseCommand):
 		portfolio = Portfolio(total_value = 0, high_date = timezone.now(), high_value = 0)
 		portfolio.save()
 		for account in response:
-			if float(account['balance']) == 0:
-				continue
-			else:
+			if float(account['balance']) != 0:
 				portfolio.account_set.create(
 					cb_id = account['id'],
 					currency = account['currency'],
