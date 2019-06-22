@@ -18,7 +18,7 @@ class Portfolio(models.Model):
 
 	def import_new_accounts(self):
 		response = auth_client.get_accounts()
-		stored_accounts = Portfolio.objects.first().account_set.all()
+		stored_accounts = self.account_set.all()
 		for account in response:
 			if stored_accounts.filter(cb_id=account['id']).count() == 0 and float(account['balance']) != 0:
 				self.account_set.create(
@@ -34,6 +34,21 @@ class Portfolio(models.Model):
 	def update_total_value(self):
 		accounts = self.account_set.all()
 		self.total_value = accounts.aggregate(total_value = Sum('value'))['total_value']
+		self.save()
+
+	def update_all(self):
+		self.import_new_accounts()
+		for account in self.account_set.all():
+			account.update_value()
+		self.update_total_value()
+
+	def is_high(self):
+		buffer = 50
+		return self.total_value + buffer > self.high_value
+
+	def update_high(self):
+		self.high_value = self.total_value
+		self.high_date = timezone.now()
 		self.save()
 
 class Account(models.Model):
@@ -58,3 +73,5 @@ class Account(models.Model):
 			self.price = float(response['price'])
 		self.value = self.quantity * self.price
 		self.save()
+
+cb_portfolio = Portfolio.objects.first()
