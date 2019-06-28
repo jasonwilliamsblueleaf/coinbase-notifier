@@ -44,7 +44,7 @@ class Portfolio(models.Model):
 
 	def is_high(self):
 		buffer = 50
-		return self.total_value + buffer > self.high_value
+		return self.total_value > self.high_value + buffer
 
 	def update_high(self):
 		self.high_value = self.total_value
